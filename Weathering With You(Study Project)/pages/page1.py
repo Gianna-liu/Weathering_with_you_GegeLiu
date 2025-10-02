@@ -4,7 +4,8 @@ import pandas as pd
 
 st.title('Display the first month of the meteo')
 
-weather_df = load_data()
+weather_df = load_data("open-meteo-subset.csv")
+weather_df['time'] = pd.to_datetime(weather_df['time'])
 weather_df = weather_df[weather_df['time'].dt.month == 1]
 
 

@@ -4,7 +4,8 @@ import plotly.express as px
 import pandas as pd
 
 ### Load the data
-weather_df = load_data()
+weather_df = load_data("open-meteo-subset.csv")
+weather_df['time'] = pd.to_datetime(weather_df['time'])
 
 ### First step, select the index and add one option
 option_meteo = st.selectbox(
