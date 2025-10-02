@@ -4,3 +4,4 @@ jupyterlab
 streamlit
 pandas
 plotly
+pathlib
