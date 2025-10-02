@@ -7,9 +7,9 @@ import pandas as pd
 weather_df = load_data("open-meteo-subset.csv")
 weather_df['time'] = pd.to_datetime(weather_df['time'])
 
-### First step, select the index and add one option
+### First step, select one Variable
 option_meteo = st.selectbox(
-    label = "Step1: Please select one index",
+    label = "Step1: Please select one Variable",
     options = weather_df.columns.drop('time').to_list() + ["Show all"],
     index=0,
     help="Select a single variable or choose 'All columns' to display everything"
@@ -22,25 +22,25 @@ month_list = sorted(weather_df['year_month'].unique())
 option_month = st.select_slider(
     "Step2: Please select one month",
     options = month_list,
-    value = '2020-01' # The value of the slider when it first renders.
+    value=month_list[0],  # The value of the slider when it first renders.
 )
 
-st.write("You selected:", option_meteo, 'and',option_month)
+st.write(f"You selected: {option_meteo} and {option_month}")
 
 ### Third step, prepare the data and plot
 df_filtered = weather_df[weather_df['year_month'] <= option_month]
-
+start_month = df_filtered['year_month'].min()
 if option_meteo != "Show all":
     option_df = df_filtered[['time', option_meteo]]
 else:
-    option_df = df_filtered.pop('year_month')
+    option_df = df_filtered.drop(columns=['year_month'])
 
 if option_meteo != "Show all":
     fig = px.line(
         df_filtered,
         x="time",
         y=option_meteo,
-        title=f"{option_meteo} in {option_month}",
+        title=f"{option_meteo} from {start_month} to {option_month}",
         labels={"time": "Date", option_meteo: option_meteo},
     )
 else:
@@ -50,8 +50,9 @@ else:
         x="time",
         y="value",
         color="variable",
-        title=f"All variables in {option_month}",
+        title=f"All variables from {start_month} to {option_month}",
         labels={"time": "Date", "value": "Value", "variable": "Variable"},
     )
 
-st.plotly_chart(fig, use_container_width=True)
+
+st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": True})
