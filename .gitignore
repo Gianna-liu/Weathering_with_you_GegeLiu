@@ -1,0 +1,14 @@
+# Ignore Mac files
+.DS_Store
+
+# Ignore .ipynb_checkpoints
+.ipynb_checkpoints
+
+# Ignore pycache
+__pycache__
+
+# Ignore the history file
+.history/
+
+# Ignore the exercise file
+Exercise/
