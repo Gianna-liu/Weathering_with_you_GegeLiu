@@ -4,10 +4,8 @@ jupyterlab
 streamlit
 pandas
 plotly
-pathlib
 matplotlib
 pyjstat
 pymongo
-cassandra
 pyspark
 pytz
