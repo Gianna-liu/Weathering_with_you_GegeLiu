@@ -17,4 +17,4 @@ scripts/*.json
 
 .3-production-plot.py
 
-Weathering_with_you_GegeLiu/StreamlitApp/.streamlit/secrets.toml
+StreamlitApp/.streamlit/secrets.toml
