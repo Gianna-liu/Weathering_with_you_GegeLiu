@@ -75,9 +75,13 @@ with col1:
 
 
 with col2:
+
     st.subheader("2. Hourly Production Trend")
 
+    # get the unique value for each productiongroup
     groups = st.multiselect("Step2: Select Production Groups", df['productiongroup'].unique(), default=df['productiongroup'].unique())
+
+    # get the unique value for each month
     month = st.selectbox("Step3: Select Month", range(1,13))
 
     # Filter the DataFrame based on selected price area, production groups, and month
