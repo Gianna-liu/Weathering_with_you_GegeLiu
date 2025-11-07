@@ -14,6 +14,7 @@ from statsmodels.tsa.seasonal import STL
 from scipy.fft import dct, idct
 import scipy.stats as stats
 from sklearn.neighbors import LocalOutlierFactor
+from scipy.signal import stft
 
 ################################### 1.Get the data from API ###################################
 
@@ -183,4 +184,37 @@ def plot_outlier_detection_lof(hourly_dataframe,selected_variable: str, contamin
     fig.add_trace(go.Scatter(x=hourly_dataframe.loc[outlier_mask, 'date'],y=selected_data.loc[outlier_mask, selected_variable], mode='markers', marker=dict(color='orange'), name='outlier'))
     fig.update_layout(title=f'The distribution of {selected_variable} with outliers', xaxis_title='Time (hourly)', yaxis_title='Values')
 
+    return fig
+
+################################### 6.Plot the spectrogram ###################################
+def plot_spectrogram(df_production,area: str = "NO1",group: str = "hydro",nperseg: int = 40,noverlap: int = 20):
+    df_subset = df_production[(df_production["pricearea"] == area)& (df_production["productiongroup"] == group)].sort_values("starttime")
+    y = df_subset["quantitykwh"].values
+    fs = 1
+    f, t, Zxx = stft(y, fs=fs, nperseg=nperseg, noverlap=noverlap)
+
+    fig = go.Figure()
+    magnitude = np.abs(Zxx)
+    start_time = df_subset["starttime"].iloc[0]
+    t_datetime = [start_time + pd.Timedelta(hours=float(h)) for h in t]
+
+    fig.add_trace(go.Heatmap(
+        x=t_datetime,
+        y=f,
+        z=magnitude,
+        colorscale="Viridis",
+        colorbar=dict(title="Amplitude"),
+        zmin=0,
+        zmax=magnitude.max() * 0.8,
+        hovertemplate="Date: %{x|%Y-%m-%d %H:%M}<br>Freq: %{y:.4f}/h<br>Amp: %{z:.2f}<extra></extra>"
+    ))
+
+    fig.update_layout(
+        title=f"Spectrogram of {group} production — {area}",
+        xaxis_title='Time (hourly)',
+        yaxis_title="Frequency [1/hour]",
+        template="plotly_white",
+        height=600,
+    )
+    fig.update_yaxes(range=[0, 0.05])
     return fig
