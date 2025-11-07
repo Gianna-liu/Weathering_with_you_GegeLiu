@@ -66,11 +66,15 @@ with tab2:
     with col2:
         n_neighbors = st.slider("Number of Neighbors (n_neighbors)",
                                 5, 100, 20, step=5)
-    fig_lof = plot_outlier_detection_lof(
-            hourly_dataframe=weather_df,
-            selected_variable=selected_variable,
-            contamination=contamination,
-            n_neighbors=n_neighbors
-        )
+    fig_lof, lof_summary = plot_outlier_detection_lof(
+        hourly_dataframe=weather_df,
+        selected_variable=selected_variable,
+        contamination=contamination,
+        n_neighbors=n_neighbors
+    )
     if fig_lof:
         st.plotly_chart(fig_lof, use_container_width=True)
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Samples", dct_summary["num_sample"])
+        col2.metric("Outliers", dct_summary["num_outliers"])
+        col3.metric("Outlier Ratio (%)", dct_summary["ratio_outlier"])

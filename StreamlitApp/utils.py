@@ -209,8 +209,8 @@ def plot_outlier_detection_lof(hourly_dataframe,selected_variable: str, contamin
         "num_sample": len(selected_data),
         "contamination_param":contamination,
         "n_neighbors":n_neighbors,
-        "n_outliers": outlier_mask.sum(),
-        "outlier_ratio (%)": round(outlier_mask.mean() * 100, 2),
+        "num_outliers": outlier_mask.sum(),
+        "ratio_outlier (%)": round(outlier_mask.mean() * 100, 2),
         "mean_value": round(selected_data[selected_variable].mean(), 2)
     }
 
