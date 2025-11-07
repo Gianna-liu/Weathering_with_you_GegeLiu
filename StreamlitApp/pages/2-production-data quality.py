@@ -1,4 +1,4 @@
-from utils import get_elhub_data, plot_stl_decompostion,plot_spectrogram
+from utils import get_elhub_data, plot_stl_decompostion, plot_spectrogram
 import streamlit as st
 
 df = get_elhub_data()
