@@ -35,8 +35,8 @@ with st.container():
 tab1, tab2 = st.tabs(["STL analysis", "Spectrogram"])
 
 with tab1:
-    st.header("Seasonal-Trend Decomposition (STL)")
-    st.subheader("Step 2 Tune STL Parameters")
+    st.subheader("Seasonal-Trend Decomposition (STL)")
+    st.write("Step 2 Tune STL Parameters")
 
     col1, col2, col3, col4 = st.columns(4)
     with col1:
@@ -63,8 +63,8 @@ with tab1:
 
 
 with tab2:
-    st.header("Spectrogram Analysis")
-    st.subheader("Step 2: Tune Spectrogram Parameters")
+    st.subheader("Spectrogram Analysis")
+    st.write("Step 2: Tune Spectrogram Parameters")
 
     col1, col2 = st.columns(2)
     with col1:

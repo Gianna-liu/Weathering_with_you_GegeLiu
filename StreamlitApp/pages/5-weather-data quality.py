@@ -24,7 +24,7 @@ selected_variable = st.selectbox("Step 2.Select Variable", weather_df.columns.dr
 tab1, tab2 = st.tabs(["Outlier/SPC analysis", "Anomaly/LOF analysis"])
 
 with tab1:
-    st.header("Outlier Detection - Statistical Process Control (SPC)")
+    st.subheader("Outlier Detection - Statistical Process Control (SPC)")
     st.write("Step 3: Tune SPC Parameters")
     col1, col2 = st.columns(2)
     with col1:
@@ -47,7 +47,7 @@ with tab1:
 
 
 with tab2:
-    st.header("Anomaly Detection - Local Outlier Factor (LOF)")
+    st.subheader("Anomaly Detection - Local Outlier Factor (LOF)")
     st.write("Step 3: Tune SPC Parameters")
     col1, col2 = st.columns(2)
     with col1:
