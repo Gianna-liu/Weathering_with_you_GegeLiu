@@ -3,6 +3,7 @@ import plotly.express as px
 import pandas as pd
 from utils import load_data_fromAPI,get_basic_info, plot_outlier_detection_dct,plot_outlier_detection_lof
 
+################################### 1. Load data from API ###################################
 selected_year = 2021
 st.title(f"Weather Data Quality Analysis — {selected_year}")
 

@@ -3,27 +3,31 @@ import plotly.express as px
 import pandas as pd
 from utils import load_data_fromAPI,get_basic_info
 
+################################### 1. Load data from API ###################################
 selected_year = 2021
 st.title(f"Yearly & Hourly Weather Overview — {selected_year}")
 
-### Load the data
 basic_info = get_basic_info()
 selected_city = st.selectbox("Step 1: Select City", basic_info["city"])
+
+# Extract latitude and longitude for the selected city
 latitude = float(basic_info.loc[basic_info["city"] == selected_city, "latitude"].iloc[0])
 longitude = float(basic_info.loc[basic_info["city"] == selected_city, "longitude"].iloc[0])
 
 weather_df = load_data_fromAPI(longitude, latitude, selected_year=selected_year)
 weather_df['date'] = pd.to_datetime(weather_df['date'])
 
+# Display information about the selected location
 price_area = basic_info.loc[
     basic_info["city"] == selected_city, "price_area_code"
 ].iloc[0]
-
 st.success(f"Using data from **{selected_city}** corresponding to **{price_area}**")
 
 if weather_df is None or weather_df.empty:
     st.warning("No data returned for this location/year.")
     st.stop()
+
+################################### 2. Create plots to display the data ###################################
 ### First step, select one Variable
 option_meteo = st.selectbox(
     label = "Step 2: Select one Variable",
@@ -52,6 +56,7 @@ if option_meteo != "Show all":
 else:
     option_df = df_filtered.drop(columns=['year_month'])
 
+# Plot the selected variable(s)
 if option_meteo != "Show all":
     fig = px.line(
         df_filtered,
