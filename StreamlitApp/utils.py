@@ -163,7 +163,18 @@ def plot_outlier_detection_dct(hourly_dataframe, selected_variable: str, W_filte
     fig.add_trace(go.Scatter(x=hourly_dataframe.loc[outliers_index,'date'], y=outliers, mode='markers', marker=dict(color='orange'), name='outlier'))
     fig.update_layout(title=f'The distribution of {selected_variable} with boundaries and outliers', xaxis_title='Time (hourly)', yaxis_title='Values')
 
-    return fig
+    summary = {
+        "variable": selected_variable,
+        "num_sample": N,
+        "Sigma Multiplier (k)":coef_k,
+        "High-pass Filter W_cutoff":W_filter,
+        "upper_boundary": upper_boundary,
+        "lower_boundary": lower_boundary,
+        "num_outliers": len(outliers_index),
+        "ratio_outlier": round(len(outliers_index) / N * 100, 2)
+    }
+    return fig,summary
+
 
 ################################### 6.Check the data quality with LOF ###################################
 

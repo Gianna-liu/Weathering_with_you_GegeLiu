@@ -41,7 +41,7 @@ with tab1:
         coef_k = st.slider("Sigma Multiplier (k)", min_value=1.0, max_value=5.0, value=3.0, step=0.5)
 
 
-    fig = plot_outlier_detection_dct(
+    fig,dct_summary = plot_outlier_detection_dct(
             hourly_dataframe=weather_df,
             selected_variable=selected_variable,
             W_filter=W_filter,
@@ -50,7 +50,10 @@ with tab1:
 
     if fig:
         st.plotly_chart(fig, use_container_width=True)
-
+        col1, col2, col3 = st.columns(3)
+        col1.metric("Total Samples", dct_summary["num_sample"])
+        col2.metric("Outliers", dct_summary["num_outliers"])
+        col3.metric("Outlier Ratio (%)", dct_summary["ratio_outlier"])
 
 with tab2:
     st.subheader("Anomaly Detection - Local Outlier Factor (LOF)")
