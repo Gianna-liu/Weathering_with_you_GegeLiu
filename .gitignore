@@ -18,3 +18,4 @@ scripts/*.json
 .3-production-plot.py
 
 StreamlitApp/.streamlit/secrets.toml
+.cache*

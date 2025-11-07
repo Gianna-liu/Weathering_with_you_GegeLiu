@@ -9,3 +9,7 @@ pyjstat
 pymongo
 pyspark
 pytz
+scipy
+scikit-learn
+statsmodels
+numpy
