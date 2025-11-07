@@ -65,7 +65,7 @@ with tab2:
                                   0.001, 0.1, 0.01, step=0.005)
     with col2:
         n_neighbors = st.slider("Number of Neighbors (n_neighbors)",
-                                5, 100, 20, step=5)
+                                5, 100, 50, step=5)
     fig_lof, lof_summary = plot_outlier_detection_lof(
         hourly_dataframe=weather_df,
         selected_variable=selected_variable,
