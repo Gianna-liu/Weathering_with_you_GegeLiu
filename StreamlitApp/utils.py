@@ -187,9 +187,8 @@ def plot_outlier_detection_dct(hourly_dataframe, selected_variable: str, W_filte
 
 ################################### 6.Check the data quality with LOF ###################################
 
-def plot_outlier_detection_lof(hourly_dataframe,selected_variable: str, contamination: float = 0.01, n_neighbors: int = 20):
+def plot_outlier_detection_lof(hourly_dataframe,selected_variable: str, contamination: float = 0.01, n_neighbors: int = 50):
     selected_data = hourly_dataframe[[selected_variable]].copy()
-    selected_data['index'] = selected_data.index
 
     lof = LocalOutlierFactor(n_neighbors=n_neighbors, contamination=contamination)
     pred_labels = lof.fit_predict(selected_data)
@@ -204,7 +203,18 @@ def plot_outlier_detection_lof(hourly_dataframe,selected_variable: str, contamin
     fig.add_trace(go.Scatter(x=hourly_dataframe.loc[outlier_mask, 'date'],y=selected_data.loc[outlier_mask, selected_variable], mode='markers', marker=dict(color='orange'), name='outlier'))
     fig.update_layout(title=f'The distribution of {selected_variable} with outliers', xaxis_title='Time (hourly)', yaxis_title='Values')
 
-    return fig
+    # Add the brief summary
+    summary = {
+        "variable": selected_variable,
+        "num_sample": len(selected_data),
+        "contamination_param":contamination,
+        "n_neighbors":n_neighbors,
+        "n_outliers": outlier_mask.sum(),
+        "outlier_ratio (%)": round(outlier_mask.mean() * 100, 2),
+        "mean_value": round(selected_data[selected_variable].mean(), 2)
+    }
+
+    return fig, summary
 
 ################################### 6.Plot the spectrogram ###################################
 def plot_spectrogram(df_production,area: str = "NO1",group: str = "hydro",nperseg: int = 40,noverlap: int = 20):
