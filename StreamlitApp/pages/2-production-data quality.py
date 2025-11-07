@@ -14,7 +14,7 @@ st.title("Production Data Quality Analysis")
 #     st.warning("⚠️ Please go back to the Home page and make selections first.")
 
 with st.container():
-    st.subheader("Step 1: Select Data Filters")
+    st.write("Step 1: Select Data Filters")
     col1, col2 = st.columns(2)
 
     with col1:
