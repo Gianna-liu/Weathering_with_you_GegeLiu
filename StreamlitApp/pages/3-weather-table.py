@@ -13,6 +13,13 @@ longitude = float(basic_info.loc[basic_info["city"] == selected_city, "longitude
 weather_df = load_data_fromAPI(longitude, latitude, selected_year=selected_year)
 weather_df = weather_df[weather_df['date'].dt.month == 1]
 
+price_area = basic_info.loc[
+    basic_info["city"] == selected_city, "price_area_code"
+].iloc[0]
+
+st.success(f"Using data from **{selected_city}** corresponding to **{price_area}**")
+
+
 if weather_df is None or weather_df.empty:
     st.warning("No data returned for this location/year.")
     st.stop()
