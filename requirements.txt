@@ -13,3 +13,4 @@ scipy
 scikit-learn
 statsmodels
 numpy
+openmeteo_requests
