@@ -75,6 +75,6 @@ with tab2:
     if fig_lof:
         st.plotly_chart(fig_lof, use_container_width=True)
         col1, col2, col3 = st.columns(3)
-        col1.metric("Total Samples", dct_summary["num_sample"])
-        col2.metric("Outliers", dct_summary["num_outliers"])
-        col3.metric("Outlier Ratio (%)", dct_summary["ratio_outlier"])
+        col1.metric("Total Samples", lof_summary["num_sample"])
+        col2.metric("Outliers", lof_summary["num_outliers"])
+        col3.metric("Outlier Ratio (%)", lof_summary["ratio_outlier"])
