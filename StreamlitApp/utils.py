@@ -152,17 +152,26 @@ def plot_outlier_detection_dct(hourly_dataframe, selected_variable: str, W_filte
     upper_boundary = trimmed_means + coef_k * sd
     lower_boundary = trimmed_means - coef_k * sd
     # Detect the outliers
-    outliers = satv[np.abs(satv-trimmed_means) > coef_k*sd]
-    outliers_index = np.where(np.abs(satv-trimmed_means) > coef_k*sd)[0]
+    outliers_index = np.where(np.abs(satv - trimmed_means) > coef_k * sd)[0]
+    df_temp = hourly_dataframe.reset_index(drop=True)
 
-    # Plot data and add lines for +/- 3 SD and the identified outliers
+    # Plot 
     fig = go.Figure()
-    fig.add_hline(y=upper_boundary,line_color='red',line_dash='dash',annotation_text=f'{coef_k}*SD (Upper)',annotation_position='top right')
-    fig.add_hline(y=lower_boundary,line_color='red',line_dash='dash',annotation_text=f'{coef_k}*SD (Lower)',annotation_position='top right')
-    fig.add_trace(go.Scatter(x=hourly_dataframe['date'], y=selected_data, mode='markers', marker=dict(color='blue'), name='normal'))
-    fig.add_trace(go.Scatter(x=hourly_dataframe.loc[outliers_index,'date'], y=outliers, mode='markers', marker=dict(color='orange'), name='outlier'))
-    fig.update_layout(title=f'The distribution of {selected_variable} with boundaries and outliers', xaxis_title='Time (hourly)', yaxis_title='Values')
+    fig.add_hline(y=upper_boundary, line_color='red', line_dash='dash',
+                  annotation_text=f'{coef_k}*SD (Upper)', annotation_position='top right')
+    fig.add_hline(y=lower_boundary, line_color='red', line_dash='dash',
+                  annotation_text=f'{coef_k}*SD (Lower)', annotation_position='bottom right')
 
+    fig.add_trace(go.Scatter(x=df_temp['date'], y=selected_data, mode='markers', marker=dict(color='blue'), name='Normal'))
+    fig.add_trace(go.Scatter(x=df_temp.loc[outliers_index, 'date'],
+                             y=df_temp.loc[outliers_index, selected_variable],
+                             mode='markers', marker=dict(color='orange', size=8),
+                             name='Outlier'))
+    fig.update_layout(
+        title=f"Outlier Detection of {selected_variable}",
+        xaxis_title="Time (hourly)",
+        yaxis_title="Values"
+    )
     summary = {
         "variable": selected_variable,
         "num_sample": N,
