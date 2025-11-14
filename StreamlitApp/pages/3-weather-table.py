@@ -6,6 +6,7 @@ from utils import load_data_fromAPI,get_basic_info
 selected_year = 2021
 st.title(f"First-Month Weather Data — {selected_year}")
 
+st.json(st.session_state)
 basic_info = get_basic_info()
 selected_city = st.selectbox("Select City", basic_info["city"])
 
