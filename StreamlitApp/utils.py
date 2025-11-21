@@ -132,55 +132,91 @@ def plot_stl_decompostion(df_production, area:str = 'NO1',group:str = 'hydro',pe
 
 ################################### 5.Check the data quality with SPC ###################################
 
-def plot_outlier_detection_dct(hourly_dataframe, selected_variable: str, W_filter: float = 1/(10*24), coef_k: float = 3):
-    selected_data = hourly_dataframe[selected_variable]
+def plot_outlier_detection_dct(hourly_dataframe,selected_variable: str, W_filter: float = 1/(10*24), coef_k: float = 3):
+    signal = hourly_dataframe[selected_variable].to_numpy(float)
     N = hourly_dataframe.shape[0]
     dt = 1
     W = np.linspace(0, 1/(2*dt), N) # cycles/hour
+
+    # check and fill NaN values with mean
+    if np.isnan(signal).any():
+        signal = np.nan_to_num(signal, nan=np.nanmean(signal))
+
     # Discrete Cosine transform
-    fourier_signal = dct(selected_data.values, type=1, norm="forward")
-    filtered_fourier_signal = fourier_signal.copy()
-    filtered_fourier_signal[(W < W_filter)] = 0 # high-pass filter
-    satv = idct(filtered_fourier_signal, type=1, norm="forward")
+    fourier_signal = dct(signal, norm="ortho")
+
+    # high-pass filter to keep the high-frequency components
+    filtered_hp_signal = fourier_signal.copy()
+    filtered_hp_signal[(W < W_filter)] = 0 
+    satv = idct(filtered_hp_signal, norm="ortho") 
+
+    # low-pass filter to keep the trend
+    filtered_lp_signal = fourier_signal.copy()
+    filtered_lp_signal[(W > W_filter)] = 0 
+    trend = idct(filtered_lp_signal, norm="ortho") 
 
     # Median absolute deviation
     coef_k = coef_k
-    trimmed_means = stats.trim_mean(satv, 0.05)
-    mad =stats.median_abs_deviation(satv)
-    sd = mad * 1.4826
+    mad_raw = stats.median_abs_deviation(satv, scale=1.0)
+    sd = mad_raw * 1.4826
+    print(sd)
     # Find the boundaries
-    upper_boundary = trimmed_means + coef_k * sd
-    lower_boundary = trimmed_means - coef_k * sd
+    upper_boundary = trend + coef_k * sd
+    lower_boundary = trend - coef_k * sd
+
     # Detect the outliers
-    outliers_index = np.where(np.abs(satv - trimmed_means) > coef_k * sd)[0]
-    df_temp = hourly_dataframe.reset_index(drop=True)
+    outlier_mask = (signal > upper_boundary) | (signal < lower_boundary)
 
-    # Plot 
     fig = go.Figure()
-    fig.add_hline(y=upper_boundary, line_color='red', line_dash='dash',
-                  annotation_text=f'{coef_k}*SD (Upper)', annotation_position='top right')
-    fig.add_hline(y=lower_boundary, line_color='red', line_dash='dash',
-                  annotation_text=f'{coef_k}*SD (Lower)', annotation_position='bottom right')
 
-    fig.add_trace(go.Scatter(x=df_temp['date'], y=selected_data, mode='markers', marker=dict(color='blue'), name='Normal'))
-    fig.add_trace(go.Scatter(x=df_temp.loc[outliers_index, 'date'],
-                             y=df_temp.loc[outliers_index, selected_variable],
-                             mode='markers', marker=dict(color='orange', size=8),
-                             name='Outlier'))
+    # Plot trend
+    fig.add_trace(go.Scatter(
+        x=hourly_dataframe['date'], y=trend,
+        mode="lines", line=dict(color="green"),
+        name="Trend"
+    ))
+
+    # Upper and lower dynamic boundaries
+    fig.add_trace(go.Scatter(
+        x=hourly_dataframe['date'], y=upper_boundary,
+        mode="lines", line=dict(color='red', dash='dash'),
+        name=f"{coef_k}*SD (Upper)"
+    ))
+
+    fig.add_trace(go.Scatter(
+        x=hourly_dataframe['date'], y=lower_boundary,
+        mode="lines", line=dict(color='red', dash='dash'),
+        name=f"{coef_k}*SD (Lower)"
+    ))
+
+    # Normal points
+    fig.add_trace(go.Scatter(
+        x=hourly_dataframe['date'], y=signal,
+        mode="markers", marker=dict(color="blue", size=5),
+        name="Normal"
+    ))
+
+    # Outliers
+    fig.add_trace(go.Scatter(
+        x=hourly_dataframe.loc[outlier_mask, 'date'],
+        y=signal[outlier_mask],
+        mode="markers", marker=dict(color="orange", size=8),
+        name="Outliers"
+    ))
+
     fig.update_layout(
-        title=f"Outlier Detection of {selected_variable}",
-        xaxis_title="Time (hourly)",
-        yaxis_title="Values"
+        title=f"DCT-Based Outlier Detection (High-pass SATV) for {selected_variable}",
+        xaxis_title="Time",
+        yaxis_title="Value"
     )
+    # add some basic info about the outliers
     summary = {
         "variable": selected_variable,
         "num_sample": N,
         "Sigma Multiplier (k)":coef_k,
         "High-pass Filter W_cutoff":W_filter,
-        "upper_boundary": upper_boundary,
-        "lower_boundary": lower_boundary,
-        "num_outliers": len(outliers_index),
-        "ratio_outlier": round(len(outliers_index) / N * 100, 2)
+        "num_outliers": int(outlier_mask.sum()),
+        "ratio_outlier": round(outlier_mask.sum() / N * 100, 2),
     }
     return fig,summary
 
