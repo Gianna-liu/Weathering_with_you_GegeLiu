@@ -7,11 +7,11 @@ A project for IND320 – Data to Decisions (NMBU)
 🚀 Features
 1. Exploratory Analysis
 
-· Electricity production & consumption (Elhub, hourly)
+  · Electricity production & consumption (Elhub, hourly)
 
-· Weather timeseries and visualization (Open-Meteo ERA5)
+  · Weather timeseries and visualization (Open-Meteo ERA5)
 
-· Interactive filtering by year and price area
+  · Interactive filtering by year and price area
 
 2. Quality Checks
 
