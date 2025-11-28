@@ -1,4 +1,8 @@
-⚡ Electricity & Weather Analytics Dashboard
+⚡️ Electricity & 🌧️ Weather Analytics Dashboard
+
+Norway Price Areas (NO1–NO5), 2021–2024
+
+A Streamlit-based interactive dashboard analyzing electricity production/consumption (Elhub) and weather conditions (Open-Meteo) for Norwegian price areas NO1–NO5.
 
 A project for IND320 – Data to Decisions (NMBU)
 
