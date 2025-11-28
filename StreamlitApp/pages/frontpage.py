@@ -151,4 +151,6 @@ with st.expander("Show details"):
     The dashboard is built using **Streamlit** for interactive exploration.
 
     **Developed by:** Gege Liu (Master Student, NMBU)
+                
+    **GitHub Repo:** https://github.com/Gianna-liu/IND320_dashboard_GegeLiu
     """)

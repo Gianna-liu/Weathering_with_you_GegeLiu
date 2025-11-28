@@ -2,9 +2,7 @@ import streamlit as st
 from datetime import datetime
 import pandas as pd
 
-# ============================================
-# RENDER TIME SETTINGS (SMART & SIMPLE)
-# ============================================
+# ---------------------- Time Controls Widget ----------------------
 def render_time_controls():
     st.subheader("⏳ Time Settings")
 
@@ -32,7 +30,7 @@ def render_time_controls():
 
     agg = st.session_state.agg
 
-    # ---------- SECOND ROW (YEAR & MONTH & DAY) ----------
+    # ---------- second row ----------
     with c2:
         if agg in ["Daily", "Monthly", "Yearly"]:
             st.selectbox(
@@ -49,7 +47,7 @@ def render_time_controls():
                 key="month"
             )
 
-    # Daily → extra Day selector
+    # Daily to extra Day selector
     if agg == "Daily":
         d1, d2 = st.columns([1, 1])
         with d1:
@@ -64,9 +62,7 @@ def render_time_controls():
                 )
 
 
-# ============================================
-#  CONVERT SELECTION → START_DATE / END_DATE
-# ============================================
+# ---------------------- Time Range Getter ----------------------
 def get_time_range():
     agg = st.session_state.agg
     year = st.session_state.year
@@ -76,11 +72,11 @@ def get_time_range():
     DATA_MIN = datetime.datetime(2021, 1, 1)
     DATA_MAX = datetime.datetime(2024, 12, 31, 23, 59, 59)
 
-    # ALL → full dataset range
+    # All data
     if agg == "All":
         return DATA_MIN, DATA_MAX
 
-    # YEARLY
+    # yearly
     if agg == "Yearly":
         if year == "All":
             return DATA_MIN, DATA_MAX
@@ -88,7 +84,7 @@ def get_time_range():
         end   = datetime.datetime(int(year), 12, 31, 23, 59, 59)
         return start, end
 
-    # MONTHLY
+    # monthly
     if agg == "Monthly":
         if year == "All":
             return DATA_MIN, DATA_MAX
@@ -105,7 +101,7 @@ def get_time_range():
             end = datetime.datetime(int(year), int(month)+1, 1) - datetime.timedelta(seconds=1)
         return start, end
 
-    # DAILY
+    # daily
     if agg == "Daily":
         if year == "All":
             return DATA_MIN, DATA_MAX
@@ -143,7 +139,7 @@ def render_time_selector():
         index=0
     )
 
-    # --- DAILY MODE ---
+    # --- daily mode ---
     if aggregation == "Daily":
         start_date = st.date_input("Start date", value=datetime(2021, 1, 1))
         end_date   = st.date_input("End date",   value=datetime(2021, 1, 31))
@@ -151,7 +147,7 @@ def render_time_selector():
         start_date = pd.to_datetime(start_date)
         end_date   = pd.to_datetime(end_date)
 
-    # --- MONTHLY MODE ---
+    # --- monthly mode ---
     elif aggregation == "Monthly":
         col1, col2 = st.columns(2)
 
@@ -166,7 +162,7 @@ def render_time_selector():
         start_date = pd.to_datetime(f"{start_year}-{start_month:02d}-01")
         end_date   = pd.to_datetime(f"{end_year}-{end_month:02d}-01") + pd.offsets.MonthEnd(0)
 
-    # --- YEARLY MODE ---
+    # --- yearly mode ---
     elif aggregation == "Yearly":
         col1, col2 = st.columns(2)
 
@@ -179,7 +175,7 @@ def render_time_selector():
         start_date = pd.to_datetime(f"{start_year}-01-01")
         end_date   = pd.to_datetime(f"{end_year}-12-31")
 
-    # --- SAFETY CHECK: end < start ---
+    # --- safety check ---
     if end_date < start_date:
         st.error(f"❌ Invalid period: End date ({end_date.date()}) is earlier than start date ({start_date.date()})")
         st.stop()   # Stop executing the rest of the script

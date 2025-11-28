@@ -86,7 +86,7 @@ def init_connection():
 
 # Pull data from the collection including production and consumption data
 # Uses st.cache_data to only rerun when the query changes or after 10 min.
-@st.cache_data(ttl=259200)
+@st.cache_data(ttl=7200)
 def get_elhub_data(start_dt, end_dt):
     client = init_connection()
     db = client['elhub_db']
