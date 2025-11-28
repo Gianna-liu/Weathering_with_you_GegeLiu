@@ -1,22 +1,21 @@
 # ⚡️ Electricity & 🌧️ Weather Analytics Dashboard
+_A project for **IND320 – Data to Decisions (NMBU)**_
 
 A Streamlit-based interactive dashboard analyzing **electricity production/consumption** (Elhub) and **weather conditions** (Open-Meteo) for Norwegian price areas **NO1–NO5**.
 
 Streamlit App link:
 🔗 https://weatheringwithyou-gegeliu.streamlit.app/
 
-_A project for **IND320 – Data to Decisions (NMBU)**_
-
 ---
 
-## 🚀 Features
+## 📁 Modules
 
-### **🔍 Exploratory Analysis**
+### **📊 Exploratory Analysis**
 - Electricity production & consumption (Elhub, hourly)
 - Weather time-series visualization (Open-Meteo ERA5)
 - Interactive filtering by **year** and **price area**
 
-### **🛠 Quality Checks**
+### **🔍 Quality Checks**
 - STL decomposition (seasonality & trend)
 - Spectrogram (frequency analysis)
 - High-pass (DCT) + SPC outlier detection
@@ -36,11 +35,11 @@ _A project for **IND320 – Data to Decisions (NMBU)**_
 Official API documentation:  
 🔗 https://api.elhub.no/energy-data-api  
 
-Endpoints used:
+Datasets used:
 - `PRODUCTION_PER_GROUP_MBA_HOUR`
 - `CONSUMPTION_PER_GROUP_MBA_HOUR`
 
-### 🌦 **Weather — Open-Meteo (ERA5)**
+### 🌧️ **Weather — Open-Meteo (ERA5)**
 Official API documentation:  
 🔗 https://open-meteo.com/ 
 
