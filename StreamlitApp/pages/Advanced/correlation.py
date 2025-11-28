@@ -123,8 +123,11 @@ def run():
     else:
         df_energy = df_cons_selected[df_cons_selected["consumptiongroup"] == group].drop(['year','month'], axis=1).copy().reset_index(drop=True)
 
-
-    y= df_energy["quantitykwh"].reset_index(drop=True)
+    df_energy = df_energy.set_index("starttime")
+    y = df_energy["quantitykwh"].sort_index()
+    # st.write(df_energy.head())
+    # y= df_energy["quantitykwh"].reset_index(drop=True)
+    # st.write(y.head())
 
     # === Layout ===
 
@@ -140,6 +143,7 @@ def run():
         center = st.slider("Center index", window//2, len(y)-window//2, 177)
 
     fig1, fig2, fig3 = plot_lag_window_center(x, y, selected_meteo_col, lag, window, center)
+#   fig1, fig2, fig3 = plot_lag_window_center(x, y, start_dt, end_dt, selected_meteo_col, lag, window, center)
 
     st.subheader("Sliding Window Correlation")
     # Make plots more compact

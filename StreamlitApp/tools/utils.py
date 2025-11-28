@@ -378,27 +378,37 @@ def plot_spectrogram(df_production,area: str = "NO1",group: str = "hydro",nperse
     return fig
 
 
-################################### 7.Plot the wind rose ###################################
+################################### 7.Plot lag-window-center correlation plots  ###################################
 
-##### Plot lag-window-center correlation plots #####
 def plot_lag_window_center(x, y, variable, lag, window, center):
     
     # 1) ---- Global correlation  -----
     corr_matrix = np.corrcoef(y[lag:], x[variable][0:len(x)-lag])
     global_corr = corr_matrix[0,1]
+    start_dt = x['date'].min()
+    end_dt = x['date'].max()
+    x_axis = pd.date_range(start_dt, end_dt, freq="H")[:len(y)]
+    # st.write(x_axis)
+
 
     # 2) ---- Sliding Window Correlation ----
     z = x[variable].copy()
     z.index = z.index + lag
+    # st.write(z.head())
+    # st.write(y.head())
+    y_simple = y.copy()
+    y_simple = y_simple.reset_index(drop=True)
+    # st.write(y_simple.head())
 
-    SWC = y.rolling(window, center=True).corr(z)
+    SWC = y_simple.rolling(window, center=True).corr(z)
 
-    # ---------------------
+
     #  Plot 1: Energy (y)
-    # ---------------------
     fig1 = go.Figure()
     fig1.add_trace(go.Scatter(
-        x=y.index, y=y.values,
+        # x=y.index, 
+        x = x_axis,
+        y = y.values,
         mode="lines",
         name="Energy (y)"
     ))
@@ -417,14 +427,16 @@ def plot_lag_window_center(x, y, variable, lag, window, center):
 
     fig1.update_layout(title="Energy (y) with sliding window")
 
-    # ---------------------
-    #  Plot 2: Meteorology (x[variable])
-    # ---------------------
-    xv = x[variable]
+    #  Plot 2: Meteorology
+    # xv = x[variable]
+    x = x.set_index("date")
+    xv = x[variable].sort_index()
 
     fig2 = go.Figure()
     fig2.add_trace(go.Scatter(
-        x=xv.index, y=xv.values,
+        # x=xv.index, 
+        x = x_axis,
+        y=xv.values,
         mode="lines",
         name=f"Meteorology: {variable}"
     ))
@@ -442,12 +454,11 @@ def plot_lag_window_center(x, y, variable, lag, window, center):
 
     fig2.update_layout(title=f"Meteorology ({variable}) with sliding window")
 
-    # ---------------------
     #  Plot 3: SWC
-    # ---------------------
     fig3 = go.Figure()
     fig3.add_trace(go.Scatter(
-        x=SWC.index, y=SWC.values,
+        x=SWC.index,
+        y=SWC.values,
         mode="lines",
         name="SWC"
     ))
