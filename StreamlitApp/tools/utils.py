@@ -36,6 +36,7 @@ def load_data_fromAPI(longitude, latitude, selected_year):
 		"hourly": ["temperature_2m", "wind_speed_10m", "wind_gusts_10m", "wind_direction_10m", "precipitation"],
 		"models": "era5",
 		"timezone": "auto",
+        "wind_speed_unit": "ms",
 	}
 	responses = openmeteo.weather_api(url, params=params)
 
@@ -83,18 +84,109 @@ def load_data_fromAPI(longitude, latitude, selected_year):
 def init_connection():
     return pymongo.MongoClient(st.secrets["mongo"]["uri"])
 
-# Pull data from the collection.
+# Pull data from the collection including production and consumption data
 # Uses st.cache_data to only rerun when the query changes or after 10 min.
-@st.cache_data(ttl=600)
-def get_elhub_data():
+@st.cache_data(ttl=259200)
+def get_elhub_data(start_dt, end_dt):
     client = init_connection()
     db = client['elhub_db']
-    collection = db['production_data']
-    items = list(collection.find({}, {"_id": 0}))
-    df_production = pd.DataFrame(items)
-    df_production['starttime'] = pd.to_datetime(df_production['starttime'])
-    df_production = df_production.sort_values("starttime")
-    return df_production
+    # Load production data
+    # Query only the needed time range
+    # Normalize boundaries
+    start_dt = start_dt.replace(hour=0, minute=0, second=0, microsecond=0)
+    end_dt = end_dt.replace(hour=23, minute=59, second=59, microsecond=999999)
+    query = {
+        "starttime": {
+            "$gte": start_dt,
+            "$lte": end_dt
+        }
+    }
+    # Production data
+    prod_items = list(
+        db["production_data"].find(query)
+    )
+    df_prod = pd.DataFrame(prod_items)
+
+    # Consumption data
+    cons_items = list(
+        db["consumption_data"].find(query)
+    )
+    df_cons = pd.DataFrame(cons_items)
+
+    # Standardize timestamp
+    if not df_prod.empty:
+        df_prod["starttime"] = pd.to_datetime(df_prod["starttime"])
+    if not df_cons.empty:
+        df_cons["starttime"] = pd.to_datetime(df_cons["starttime"])
+    return df_prod, df_cons
+
+def filter_time_window(df, start_date, end_date):
+    if df.empty:
+        return df
+    start_dt = pd.Timestamp(start_date)
+    end_dt = pd.Timestamp(end_date) + pd.Timedelta(days=1) - pd.Timedelta(seconds=1)
+    return df[(df["starttime"] >= start_dt) & (df["starttime"] <= end_dt)]
+
+
+def get_group_list(df_prod, df_cons, mode):
+    if mode == "Production":
+        return sorted(df_prod["productiongroup"].dropna().unique())
+    else:
+        return sorted(df_cons["consumptiongroup"].dropna().unique())
+    
+def energy_format_kwh(x):
+    if x >= 1e6:
+        return f"{x/1e6:.2f} GWh"
+    elif x >= 1e3:
+        return f"{x/1e3:.2f} MWh"
+    else:
+        return f"{x:.0f} kWh"
+
+
+def get_area_means(df, mode, group, start_date, end_date, aggregation):
+    # 1. Filter by time window
+    df = filter_time_window(df, start_date, end_date)
+    # st.write(df.head())
+
+    # 2. Filter by production/consumption group
+    if mode == "Production":
+        df = df[df["productiongroup"] == group]
+    else:
+        df = df[df["consumptiongroup"] == group]
+
+    if df.empty:
+        return pd.DataFrame(columns=["area", "value"])
+
+    # 3. Apply aggregation: Daily / Monthly / Yearly
+    if aggregation == "Daily":
+        df["period"] = df["starttime"].dt.to_period("D")
+    elif aggregation == "Monthly":
+        df["period"] = df["starttime"].dt.to_period("M")
+    elif aggregation == "Yearly":
+        df["period"] = df["starttime"].dt.to_period("Y")
+    else:
+        raise ValueError("Invalid aggregation value")
+
+    # 4. First aggregation: sum per period per area
+    # (one value per day/month/year for each price area)
+    df_agg = (
+        df.groupby(["pricearea", "period"])["quantitykwh"]
+        .sum()
+        .reset_index()
+    )
+
+    # 5. Second aggregation: mean across selected periods
+    df_mean = (
+        df_agg.groupby("pricearea")["quantitykwh"]
+        .mean()
+        .reset_index()
+        .rename(columns={"pricearea": "area", "quantitykwh": "value_raw"})
+    )
+
+    # 6. Add formatted string for display
+    df_mean["value"] = df_mean["value_raw"].apply(energy_format_kwh)
+
+    return df_mean
 
 ################################### 3.Save the basic info ###################################
 
@@ -284,3 +376,118 @@ def plot_spectrogram(df_production,area: str = "NO1",group: str = "hydro",nperse
     )
     fig.update_yaxes(range=[0, 0.05])
     return fig
+
+
+################################### 7.Plot the wind rose ###################################
+
+##### Plot lag-window-center correlation plots #####
+def plot_lag_window_center(x, y, variable, lag, window, center):
+    
+    # 1) ---- Global correlation  -----
+    corr_matrix = np.corrcoef(y[lag:], x[variable][0:len(x)-lag])
+    global_corr = corr_matrix[0,1]
+
+    # 2) ---- Sliding Window Correlation ----
+    z = x[variable].copy()
+    z.index = z.index + lag
+
+    SWC = y.rolling(window, center=True).corr(z)
+
+    # ---------------------
+    #  Plot 1: Energy (y)
+    # ---------------------
+    fig1 = go.Figure()
+    fig1.add_trace(go.Scatter(
+        x=y.index, y=y.values,
+        mode="lines",
+        name="Energy (y)"
+    ))
+
+    # Red line window
+    left = max(0, center - window//2 + lag)
+    right = min(len(y)-1, center + window//2 + lag)
+
+    fig1.add_trace(go.Scatter(
+        x=y.index[left:right],
+        y=y.values[left:right],
+        mode="lines",
+        line=dict(color="red", width=3),
+        name="Window segment"
+    ))
+
+    fig1.update_layout(title="Energy (y) with sliding window")
+
+    # ---------------------
+    #  Plot 2: Meteorology (x[variable])
+    # ---------------------
+    xv = x[variable]
+
+    fig2 = go.Figure()
+    fig2.add_trace(go.Scatter(
+        x=xv.index, y=xv.values,
+        mode="lines",
+        name=f"Meteorology: {variable}"
+    ))
+
+    left2 = max(0, center - window//2)
+    right2 = min(len(x)-1, center + window//2)
+
+    fig2.add_trace(go.Scatter(
+        x=xv.index[left2:right2],
+        y=xv.values[left2:right2],
+        mode="lines",
+        line=dict(color="red", width=3),
+        name="Window segment"
+    ))
+
+    fig2.update_layout(title=f"Meteorology ({variable}) with sliding window")
+
+    # ---------------------
+    #  Plot 3: SWC
+    # ---------------------
+    fig3 = go.Figure()
+    fig3.add_trace(go.Scatter(
+        x=SWC.index, y=SWC.values,
+        mode="lines",
+        name="SWC"
+    ))
+
+    # red dot = center+lag
+    idx = center + lag
+    if 0 <= idx < len(SWC):
+        fig3.add_trace(go.Scatter(
+            x=[SWC.index[idx]],
+            y=[SWC.values[idx]],
+            mode="markers",
+            marker=dict(color="red", size=10),
+            name="current SWC"
+        ))
+
+    fig3.update_layout(
+        title=f"Sliding Window Correlation (Global Corr = {global_corr:.3f})",
+        yaxis=dict(range=[-1,1])
+    )
+
+    return fig1, fig2, fig3
+
+def apply_theme(group):
+    if group == "blue":
+        sidebar = "#3c63a7"
+    elif group == "gray":
+        sidebar = "#5f6f8f"
+    elif group == "purple":
+        sidebar = "#8b5fd2"
+    else:
+        sidebar = "#232020"
+
+    st.markdown(f"""
+    <style>
+    [data-testid="stSidebar"] > div {{
+        background-color: {sidebar} !important;
+        border-radius: 6px;
+        padding-top: 20px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }}
+    </style>
+    """, unsafe_allow_html=True)
