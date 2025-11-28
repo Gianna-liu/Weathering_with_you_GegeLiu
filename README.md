@@ -1,6 +1,8 @@
 # ⚡️ Electricity & 🌧️ Weather Analytics Dashboard
 
 A Streamlit-based interactive dashboard analyzing **electricity production/consumption** (Elhub) and **weather conditions** (Open-Meteo) for Norwegian price areas **NO1–NO5**.
+Streamlit App link:
+🔗 https://weatheringwithyou-gegeliu.streamlit.app/
 
 _A project for **IND320 – Data to Decisions (NMBU)**_
 
