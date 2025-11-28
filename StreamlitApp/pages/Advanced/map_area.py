@@ -7,6 +7,7 @@ import json
 import pandas as pd
 from shapely.geometry import shape, Point
 from datetime import datetime
+import os
 
 
 def run():
@@ -69,9 +70,11 @@ def run():
 
 
     # --------------------- Load GeoJSON --------------------- 
+    BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+    DATA_DIR = os.path.join(BASE_DIR, "data")
     @st.cache_resource
     def load_geojson():
-        with open("data/area.geojson") as f:
+        with open(os.path.join(DATA_DIR, "area.geojson")) as f:
             return json.load(f)
 
     geojson_data = load_geojson()
