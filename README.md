@@ -30,11 +30,17 @@ _A project for **IND320 – Data to Decisions (NMBU)**_
 ## 📊 Data Sources
 
 ### ⚡ **Electricity — Elhub API**
+Official API documentation:  
+🔗 https://api.elhub.no/energy-data-api  
+
 Endpoints used:
 - `PRODUCTION_PER_GROUP_MBA_HOUR`
 - `CONSUMPTION_PER_GROUP_MBA_HOUR`
 
 ### 🌦 **Weather — Open-Meteo (ERA5)**
+Official API documentation:  
+🔗 https://open-meteo.com/ 
+
 Variables included:
 - `temperature_2m` — °C  
 - `wind_speed_10m` — m/s  
