@@ -70,11 +70,14 @@ def run():
 
 
     # --------------------- Load GeoJSON --------------------- 
-    BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-    DATA_DIR = os.path.join(BASE_DIR, "data")
-    @st.cache_resource
+    import os, json
+
     def load_geojson():
-        with open(os.path.join(DATA_DIR, "area.geojson")) as f:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        geo_path = os.path.join(base_dir, "..", "..", "data", "area.geojson")
+        geo_path = os.path.abspath(geo_path)   # normalize path
+
+        with open(geo_path) as f:
             return json.load(f)
 
     geojson_data = load_geojson()
