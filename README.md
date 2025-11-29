@@ -4,7 +4,7 @@ _A project for **IND320 – Data to Decisions (NMBU)**_
 A Streamlit-based interactive dashboard analyzing **electricity production/consumption** (Elhub) and **weather conditions** (Open-Meteo) for Norwegian price areas **NO1–NO5**.
 
 Streamlit App link:
-🔗 https://weatheringwithyou-gegeliu.streamlit.app/
+🔗 https://ind320dashboardgegeliu.streamlit.app/
 
 ---
 
